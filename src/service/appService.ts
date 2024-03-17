@@ -1,9 +1,15 @@
-import { OrderRouterService } from "../domain/ports/OrderRouterService";
+import OrderRouterService from "../domain/ports/OrderRouterService";
+import ExchangeClient from "../domain/ports/exchangeClient";
 
 export default class AppService implements OrderRouterService {
-    constructor() {}
+    private readonly client: ExchangeClient;
 
-    getAvgPrice(pair: string): string {
-        return `${pair} avg price: 124`;
+    constructor(client: ExchangeClient) {
+        this.client = client;
+    }
+
+    async getAvgPrice(pair: string): Promise<string> {
+        const avgPrice = await this.client.getPairAvgPrice(pair);
+        return `${pair} avg price: ${avgPrice.price}`;
     }
 }

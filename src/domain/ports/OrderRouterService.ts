@@ -1,5 +1,5 @@
 interface OrderRouterService {
-    getAvgPrice(pair: string): string
+    getAvgPrice(pair: string): Promise<string>
 }
 
-export { OrderRouterService };
+export default OrderRouterService;

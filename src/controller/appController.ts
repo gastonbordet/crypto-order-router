@@ -1,4 +1,4 @@
-import { OrderRouterService } from "../domain/ports/OrderRouterService";
+import OrderRouterService from "../domain/ports/OrderRouterService";
 import { Request, Response } from "express";
 
 export default class AppController {
@@ -9,9 +9,9 @@ export default class AppController {
         this.GetAvgPrice = this.GetAvgPrice.bind(this);
     }
 
-    public GetAvgPrice(req: Request, res: Response) {
+    public async GetAvgPrice(req: Request, res: Response) {
         const pair = String(req.query.pair);
-        const avgPrice = this.appService.getAvgPrice(pair);
+        const avgPrice = await this.appService.getAvgPrice(pair);
         res.status(200).send(avgPrice);
     }
 }
