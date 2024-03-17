@@ -1,17 +1,13 @@
-import { Response } from "express";
-
 const express = require("express");
 const dotenv = require("dotenv");
 
 // configures dotenv to work in your application
 dotenv.config();
 const app = express();
-
 const PORT = process.env.PORT;
+const router = require('./api')
 
-app.get("/ping", (request: Request, response: Response) => { 
-  response.status(200).send("pong");
-}); 
+app.use("/", router)
 
 app.listen(PORT, () => { 
   console.log("Server running at PORT: ", PORT); 
