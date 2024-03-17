@@ -1,15 +1,12 @@
-import { Response } from "express";
-import {
-    appController
-} from '../di';
+import express, { Request, Response } from "express";
+import { appController } from "../di";
 
-const router = require('express').Router();
-
+const router = express.Router();
 
 router.get("/ping", (_: Request, res: Response) => { 
     res.status(200).send("pong");
 }); 
 
-router.get("/avgprice", appController.GetAvgPrice)
+router.get("/avgprice", appController.GetAvgPrice);
 
-module.exports = router;
+export default router;
