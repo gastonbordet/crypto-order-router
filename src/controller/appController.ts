@@ -1,7 +1,7 @@
-import { OrderRouterService } from '../domain/ports/OrderRouterService';
+import { OrderRouterService } from "../domain/ports/OrderRouterService";
 import { Request, Response } from "express";
 
-class AppController {
+export default class AppController {
     private readonly appService: OrderRouterService;
     
     constructor(appService: OrderRouterService) {
@@ -15,5 +15,3 @@ class AppController {
         res.status(200).send(avgPrice);
     }
 }
-
-export { AppController };
