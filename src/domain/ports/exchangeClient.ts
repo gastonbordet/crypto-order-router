@@ -1,7 +1,8 @@
-import { PairAvgPrice } from "../models/PairAvgPrice";
+import { PairAvgPrice } from "../models/pairAvgPrice";
 
 interface ExchangeClient {
     getPairAvgPrice(pair: string): Promise<PairAvgPrice>
+    
 }
 
 export default ExchangeClient;

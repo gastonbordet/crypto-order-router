@@ -1,4 +1,4 @@
-import { PairAvgPrice } from "../../domain/models/PairAvgPrice";
+import { PairAvgPrice } from "../../domain/models/pairAvgPrice";
 import ExchangeClient from "../../domain/ports/exchangeClient";
 import axios from "axios";
 import dotenv from "dotenv";
