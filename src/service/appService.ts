@@ -1,3 +1,4 @@
+import { PairAvgPrice } from "../domain/models/pairAvgPrice";
 import OrderRouterService from "../domain/ports/OrderRouterService";
 import ExchangeClient from "../domain/ports/exchangeClient";
 
@@ -8,8 +9,8 @@ export default class AppService implements OrderRouterService {
         this.client = client;
     }
 
-    async getAvgPrice(pair: string): Promise<string> {
+    async getAvgPrice(pair: string): Promise<PairAvgPrice> {
         const avgPrice = await this.client.getPairAvgPrice(pair);
-        return `${pair} avg price: ${avgPrice.price}`;
+        return avgPrice;
     }
 }
