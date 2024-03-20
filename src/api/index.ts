@@ -8,5 +8,6 @@ router.get("/ping", (_: Request, res: Response) => {
 }); 
 
 router.get("/avgprice", appController.GetAvgPrice);
+router.get("/bestprice", appController.GetBestPairPrice);
 
 export default router;
