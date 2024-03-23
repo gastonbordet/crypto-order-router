@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@binance/connector-typescript": "^0.3.6",
     "axios": "^1.6.8",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
