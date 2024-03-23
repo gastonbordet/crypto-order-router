@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Order } from "../../domain/models/order";
 import { PairAvgPrice } from "../../domain/models/pairAvgPrice";
 import ExchangeConnector from "../../domain/ports/exchangeConnector";
 import { Spot, Side, OrderType, TimeInForce } from "@binance/connector-typescript";
 import { ORDER_TYPE, SIDES, TIME_IN_FORCE } from "../../domain/models/types";
+import CustomError from "../../domain/models/error";
 
 export default class BinanceConnector implements ExchangeConnector {
     private readonly binanceClient;
@@ -27,10 +29,9 @@ export default class BinanceConnector implements ExchangeConnector {
                 }
             );
     
-            order.price = Number(binanceNewOrder.discount);
             return order;
         } catch (error) {
-            return order;
+            throw new CustomError(400, `Error on exchange connector: ${String(error)}`);
         }
     }
 
