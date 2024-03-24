@@ -1,15 +1,23 @@
+import { Order, OrderAllocation } from "../domain/models/order";
+import { PairAvgPrice } from "../domain/models/pairAvgPrice";
 import OrderRouterService from "../domain/ports/OrderRouterService";
-import ExchangeClient from "../domain/ports/exchangeClient";
+import ExchangeConnector from "../domain/ports/exchangeConnector";
 
 export default class AppService implements OrderRouterService {
-    private readonly client: ExchangeClient;
+    private readonly exchangeConnector: ExchangeConnector;
 
-    constructor(client: ExchangeClient) {
-        this.client = client;
+    constructor(connector: ExchangeConnector) {
+        this.exchangeConnector = connector;
+    }
+    
+    async createNewOrder(order: Order): Promise<OrderAllocation> {
+        const orderAllocation = await this.exchangeConnector.postOrder(order);
+
+        return orderAllocation;
     }
 
-    async getAvgPrice(pair: string): Promise<string> {
-        const avgPrice = await this.client.getPairAvgPrice(pair);
-        return `${pair} avg price: ${avgPrice.price}`;
+    async getAvgPrice(pair: string): Promise<PairAvgPrice> {
+        const avgPrice = await this.exchangeConnector.getPairAvgPrice(pair);
+        return avgPrice;
     }
 }
