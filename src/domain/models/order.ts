@@ -1,4 +1,4 @@
-import { ORDER_TYPE, SIDES, TIME_IN_FORCE } from "./types";
+import { ORDER_TYPE, SIDES, TIME_IN_FORCE, ORDER_STATUS } from "./types";
 
 interface Order {
     pair: string;
@@ -9,4 +9,19 @@ interface Order {
     quantity: number;
 }
 
-export { Order };
+interface OrderAllocation {
+    pair: string;
+    orderId: string;
+    clientOrderId: string;
+    transactTime: number;
+    price?: string;
+    originalQuantity?: string;
+    executedQuantity?: string;
+    status?: ORDER_STATUS;
+    timeInForce?: TIME_IN_FORCE;
+    type?: ORDER_TYPE;
+    side?: SIDES;
+    workingTime?: number;
+}
+
+export { Order, OrderAllocation };

@@ -1,35 +1,36 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Order } from "../../domain/models/order";
+import { Order, OrderAllocation } from "../../domain/models/order";
 import { PairAvgPrice } from "../../domain/models/pairAvgPrice";
 import ExchangeConnector from "../../domain/ports/exchangeConnector";
-import { Spot, Side, OrderType, TimeInForce } from "@binance/connector-typescript";
-import { ORDER_TYPE, SIDES, TIME_IN_FORCE } from "../../domain/models/types";
+import { Spot } from "@binance/connector-typescript";
 import CustomError from "../../domain/models/error";
+import { ExchangeConnectorMapper } from "./mapper";
 
 export default class BinanceConnector implements ExchangeConnector {
     private readonly binanceClient;
+    private readonly mapper;
 
-    constructor(binanceClient: Spot) {
+    constructor(binanceClient: Spot, mapper: ExchangeConnectorMapper, ) {
         this.binanceClient = binanceClient;
+        this.mapper = mapper;
         this.getPairAvgPrice = this.getPairAvgPrice.bind(this);
         this.postOrder = this.postOrder.bind(this);
     }
 
-    async postOrder(order: Order): Promise<Order> {
+    async postOrder(order: Order): Promise<OrderAllocation> {
         try {
-            const binanceNewOrder = await this.binanceClient.testNewOrder(
+            const binanceNewOrder = await this.binanceClient.newOrder(
                 order.pair,
-                this.convertDomainSidesToBinanceSide(order.side),
-                this.convertDomainOrderTypesToBinanceOrderType(order.type),
+                this.mapper.convertToExchangeSide(order.side),
+                this.mapper.convertToExchangeOrderType(order.type),
                 {
-                    timeInForce: this.convertDomainTimeInForToBinanceTimeInForce(order.timeInForce),
+                    timeInForce: this.mapper.convertToExchangeTimeInForce(order.timeInForce),
                     quantity: order.quantity,
                     price: order.price,
                     recvWindow: 5000,
                 }
             );
     
-            return order;
+            return this.mapper.convertToOrderAllocationFromExchangeNewOrderResponse(binanceNewOrder);
         } catch (error) {
             throw new CustomError(400, `Error on exchange connector: ${String(error)}`);
         }
@@ -44,50 +45,4 @@ export default class BinanceConnector implements ExchangeConnector {
             binanceAvgPrice.closeTime
         );
     }
-
-    private convertDomainSidesToBinanceSide(side: SIDES): Side {
-        switch (side) {
-            case SIDES.SELL:
-                return Side.SELL;
-            case SIDES.BUY:
-                return Side.BUY;
-            default:
-                throw new Error(`Invalid side: ${side}`);
-        }
-    }
-    
-    private convertDomainOrderTypesToBinanceOrderType(type: ORDER_TYPE): OrderType {
-        switch (type) {
-            case ORDER_TYPE.LIMIT:
-                return OrderType.LIMIT;
-            case ORDER_TYPE.MARKET:
-                return OrderType.MARKET;
-            case ORDER_TYPE.STOP_LOSS:
-                return OrderType.STOP_LOSS;
-            case ORDER_TYPE.STOP_LOSS_LIMIT:
-                return OrderType.STOP_LOSS_LIMIT;   
-            case ORDER_TYPE.TAKE_PROFIT:
-                return OrderType.TAKE_PROFIT; 
-            case ORDER_TYPE.TAKE_PROFIT_LIMIT:
-                return OrderType.TAKE_PROFIT_LIMIT; 
-            case ORDER_TYPE.LIMIT_MAKER:
-                return OrderType.LIMIT_MAKER; 
-            default:
-                throw new Error(`Invalid order type: ${type}`);
-        }
-    }
-    
-    private convertDomainTimeInForToBinanceTimeInForce(timeInForce: TIME_IN_FORCE): TimeInForce {
-        switch (timeInForce) {
-            case TIME_IN_FORCE.GTC:
-                return TimeInForce.GTC;
-            case TIME_IN_FORCE.IOC:
-                return TimeInForce.IOC;
-            case TIME_IN_FORCE.FOK:
-                return TimeInForce.FOK;
-            default:
-                throw new Error(`Invalid time in force: ${timeInForce}`);
-        }
-    }
-    
 }

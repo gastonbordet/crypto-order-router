@@ -55,8 +55,8 @@ export default class AppController {
             );
             newOrderBody.validateSelf();
 
-            const orderResponse = await this.appService.createNewOrder(newOrderBody);
-            res.status(201).send(orderResponse);
+            const orderAllocation = await this.appService.createNewOrder(newOrderBody);
+            res.status(201).send(orderAllocation);
         } catch (error) {
             const err = error as CustomError;
             res.status(err.status || 500).send(err.message);
