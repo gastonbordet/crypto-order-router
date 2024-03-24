@@ -1,4 +1,4 @@
-import AppController from "../controller/appController";
+import { AppController } from "../controller/appController";
 import AppService from "../service/appService";
 import BinanceClient from "../infrastructure/restclient/binanceConnector";
 import { BinanceConnectorMapper } from "../infrastructure/restclient/mapper";
@@ -27,4 +27,4 @@ const binanceConnector = new BinanceClient(binanceClient, binanceConnectorMapper
 const appService = new AppService(binanceConnector, persistenceAdapter);
 const appController = new AppController(appService);
 
-export { appController };
+export { appController, appService, persistenceAdapter };
