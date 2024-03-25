@@ -1,13 +1,17 @@
 import express, { Request, Response } from "express";
-import { appController } from "../di";
+import { OrderRouterController } from "../controller/appController";
 
-const router = express.Router();
+export const buildRouter = (appController: OrderRouterController): express.Router => {
+    const router = express.Router();
+    router.use(express.json());
+    
+    router.get("/ping", (_: Request, res: Response) => { 
+        res.status(200).send("pong");
+    }); 
+    
+    router.get("/avgprice", appController.getAvgPrice);
+    router.get("/bestprice", appController.getBestPairPrice);
+    router.post("/orders", appController.postOrder);
 
-router.get("/ping", (_: Request, res: Response) => { 
-    res.status(200).send("pong");
-}); 
-
-router.get("/avgprice", appController.GetAvgPrice);
-router.get("/bestprice", appController.GetBestPairPrice);
-
-export default router;
+    return router;
+};

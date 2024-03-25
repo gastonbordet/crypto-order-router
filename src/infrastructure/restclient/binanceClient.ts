@@ -1,31 +1,29 @@
-import { PairAvgPrice } from "../../domain/models/pairAvgPrice";
-import ExchangeClient from "../../domain/ports/exchangeClient";
-import axios from "axios";
-import dotenv from "dotenv";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { OrderType, Side } from "@binance/connector-typescript";
+import { Spot } from "@binance/connector-typescript";
 
-interface BinancePairAvgPrice {
-    mins: number,
-    price: string,
-    closeTime: number
+interface BinanceRestClient {
+    currentAveragePrice(symbol: string): Promise<any>;
+    newOrder(symbol: string, side: Side, type: OrderType, options?: any): Promise<any>;
+
 }
 
-export default class BinanceClient implements ExchangeClient {
-    private readonly HOST: string;
+class BinanceRestClientImpl implements BinanceRestClient {
+    private readonly client;
 
-    constructor() {
-        dotenv.config();
-        this.HOST = process.env.BINANCE_HOST || "";
+    constructor(client: Spot) {
+        this.client = client;
+        this.currentAveragePrice = this.currentAveragePrice.bind(this);
+        this.newOrder = this.newOrder.bind(this);
+    }
+    
+    currentAveragePrice(symbol: string): Promise<any> {
+        return this.client.currentAveragePrice(symbol);
     }
 
-    async getPairAvgPrice(pair: string): Promise<PairAvgPrice> {
-        const url = `${this.HOST}/api/v3/avgPrice?symbol=${pair}`;
-        const { data } = await axios.get(url);
-        const binanceAvgPrice: BinancePairAvgPrice = data;
-
-        return new PairAvgPrice(
-            binanceAvgPrice.mins,
-            binanceAvgPrice.price,
-            binanceAvgPrice.closeTime
-        );
+    newOrder(symbol: string, side: Side, type: OrderType, options?: any): Promise<any> {
+        return this.client.newOrder(symbol, side, type, options);
     }
 }
+
+export { BinanceRestClient, BinanceRestClientImpl };

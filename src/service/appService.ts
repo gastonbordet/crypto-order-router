@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { Order, OrderAllocation } from "../domain/models/order";
 import { BestPairPrice } from "../domain/models/bestPairPrice";
+import { PairAvgPrice } from "../domain/models/pairAvgPrice";
 import OrderRouterService from "../domain/ports/OrderRouterService";
-import ExchangeClient from "../domain/ports/exchangeClient";
+import ExchangeConnector from "../domain/ports/exchangeConnector";
+import { OrderPersistence } from "../domain/ports/orderPersistence";
 
 const MOCK_DATA = {
     "asks": [
@@ -22,10 +25,20 @@ const MOCK_DATA = {
 
 
 export default class AppService implements OrderRouterService {
-    private readonly client: ExchangeClient;
+    private readonly exchangeConnector: ExchangeConnector;
+    private readonly orderPersistence: OrderPersistence;
 
-    constructor(client: ExchangeClient) {
-        this.client = client;
+    constructor(connector: ExchangeConnector, orderPersistence: OrderPersistence) {
+        this.exchangeConnector = connector;
+        this.orderPersistence = orderPersistence;
+    }
+    
+    async createNewOrder(order: Order): Promise<OrderAllocation> {
+        const orderAllocation = this.orderPersistence.saveOrderAllocation(
+            await this.exchangeConnector.postOrder(order)
+        );
+
+        return orderAllocation;
     }
 
     getBestPairPrice(pair: string, amount: number): BestPairPrice {
@@ -46,8 +59,8 @@ export default class AppService implements OrderRouterService {
         return { pair: pair, amount: amount, price: price };
     }
 
-    async getAvgPrice(pair: string): Promise<string> {
-        const avgPrice = await this.client.getPairAvgPrice(pair);
-        return `${pair} avg price: ${avgPrice.price}`;
+    async getAvgPrice(pair: string): Promise<PairAvgPrice> {
+        const avgPrice = await this.exchangeConnector.getPairAvgPrice(pair);
+        return avgPrice;
     }
 }
