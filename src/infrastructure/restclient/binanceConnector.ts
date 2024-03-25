@@ -1,15 +1,15 @@
 import { Order, OrderAllocation } from "../../domain/models/order";
 import { PairAvgPrice } from "../../domain/models/pairAvgPrice";
 import ExchangeConnector from "../../domain/ports/exchangeConnector";
-import { Spot } from "@binance/connector-typescript";
 import CustomError from "../../domain/models/error";
 import { ExchangeConnectorMapper } from "./mapper";
+import { BinanceRestClient } from "./binanceClient";
 
 export default class BinanceConnector implements ExchangeConnector {
     private readonly binanceClient;
     private readonly mapper;
 
-    constructor(binanceClient: Spot, mapper: ExchangeConnectorMapper, ) {
+    constructor(binanceClient: BinanceRestClient, mapper: ExchangeConnectorMapper, ) {
         this.binanceClient = binanceClient;
         this.mapper = mapper;
         this.getPairAvgPrice = this.getPairAvgPrice.bind(this);

@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { OrderAllocation } from "../../domain/models/order";
 import { OrderPersistence } from "../../domain/ports/orderPersistence";
-import { Repository } from "typeorm";
 import { OrderAllocationEntity } from "./entity";
 import CustomError from "../../domain/models/error";
+import { OrderAllocationRepository } from "./repository";
 
 export class PersistenceAdapter implements OrderPersistence {
-    private readonly repository: Repository<OrderAllocation>;
+    private readonly repository: OrderAllocationRepository;
     
-    constructor(repository: Repository<OrderAllocation>) {
+    constructor(repository: OrderAllocationRepository) {
         this.repository = repository;
         this.saveOrderAllocation = this.saveOrderAllocation.bind(this);
     }

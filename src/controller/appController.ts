@@ -4,6 +4,11 @@ import { ORDER_TYPE, PAIRS, SIDES, TIME_IN_FORCE } from "../domain/models/types"
 import OrderRouterService from "../domain/ports/OrderRouterService";
 import { Request, Response } from "express";
 
+export interface OrderRouterController {
+    getAvgPrice(req: Request, res: Response): void
+    postOrder(req: Request, res: Response): void
+}
+
 class NewOrderBody implements Order {
     pair: string;
     side: SIDES;
@@ -29,22 +34,22 @@ class NewOrderBody implements Order {
     }
 }
 
-export default class AppController {
+export class AppController implements OrderRouterController {
     private readonly appService: OrderRouterService;
     
     constructor(appService: OrderRouterService) {
         this.appService = appService;
-        this.GetAvgPrice = this.GetAvgPrice.bind(this);
-        this.PostOrder = this.PostOrder.bind(this);
+        this.getAvgPrice = this.getAvgPrice.bind(this);
+        this.postOrder = this.postOrder.bind(this);
     }
 
-    public async GetAvgPrice(req: Request, res: Response) {
+    public async getAvgPrice(req: Request, res: Response) {
         const pair = String(req.query.pair);
         const avgPrice = await this.appService.getAvgPrice(pair);
         res.status(200).send(avgPrice);
     }
 
-    public async PostOrder(req: Request, res: Response) {
+    public async postOrder(req: Request, res: Response) {
         try {
             const newOrderBody = new NewOrderBody(
                 req.body.pair,

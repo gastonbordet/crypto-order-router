@@ -1,11 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
-import router from "./api";
+import { buildRouter } from "./api";
+import { appController } from "./di";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT;
+const router = buildRouter(appController);
 
 app.use("/", router);
 
