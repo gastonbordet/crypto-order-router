@@ -1,6 +1,6 @@
 import { OrderStatus, OrderType, Side, TimeInForce } from "@binance/connector-typescript";
 
-export const binanceNewOrder = {
+export const mockBinanceNewOrder = {
     symbol: "USDTBTC",
     orderId: 123,
     orderListId: 456,

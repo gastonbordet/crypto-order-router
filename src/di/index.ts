@@ -7,6 +7,9 @@ import dotenv from "dotenv";
 import { PersistenceAdapter } from "../infrastructure/persistence/adapter";
 import { initDataSource } from "../infrastructure/persistence/dataSource";
 import { OrderAllocationEntity } from "../infrastructure/persistence/entity";
+import { OrderAllocationRepositoryImpl } from "../infrastructure/persistence/repository";
+import { BinanceRestClientImpl } from "../infrastructure/restclient/binanceClient";
+
 dotenv.config();
 
 const dataSource = initDataSource(
@@ -16,12 +19,12 @@ const dataSource = initDataSource(
     String(process.env.POSTGRES_PASSWORD),
     String(process.env.POSTGRES_DB)
 );
-const orderRepository = dataSource.getRepository(OrderAllocationEntity);
+const orderRepository = new OrderAllocationRepositoryImpl(dataSource.getRepository(OrderAllocationEntity));
 const persistenceAdapter = new PersistenceAdapter(orderRepository);
-const binanceClient = new Spot(
+const binanceClient = new BinanceRestClientImpl(new Spot(
     process.env.BINANCE_API_KEY || "", 
     process.env.BINANCE_SECRET_KEY || ""
-);
+));
 const binanceConnectorMapper = new BinanceConnectorMapper();
 const binanceConnector = new BinanceClient(binanceClient, binanceConnectorMapper);
 const appService = new AppService(binanceConnector, persistenceAdapter);
