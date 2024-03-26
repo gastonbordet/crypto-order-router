@@ -6,7 +6,14 @@ import { PAIRS, SIDES } from "../models/types";
 interface OrderRouterService {
     getAvgPrice(pair: PAIRS): Promise<PairAvgPrice>
     createNewOrder(order: Order): Promise<OrderAllocation>
-    getBestPairPrice(pair: PAIRS, amount: number, side: SIDES, limitOrders: number): Promise<BestPairPrice>
+    getBestPairPrice(
+        pair: PAIRS, 
+        amount: number, 
+        side: SIDES, 
+        limitOrders: number,
+        customFee?: number,
+        customSpread?: number
+    ): Promise<BestPairPrice>
 }
 
 export default OrderRouterService;

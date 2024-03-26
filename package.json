@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "start-dev": "nodemon ./src/index.ts",
+    "start-migrations": "npx typeorm-ts-node-commonjs migration:run -d ./src/infrastructure/persistence/typeOrm.config.ts",
+    "start-dev": "npm run start-migrations && nodemon ./src/index.ts",
     "lint": "eslint ./"
   },
   "author": "",

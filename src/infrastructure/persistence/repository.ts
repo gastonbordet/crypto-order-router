@@ -1,10 +1,14 @@
 import { OrderAllocation } from "../../domain/models/order";
-import { OrderAllocationEntity } from "./entity";
+import { OrderAllocationEntity, PriceConfigurationEntity } from "./entity";
 import { Repository } from "typeorm";
 
 
 interface OrderAllocationRepository {
     save(order: OrderAllocationEntity): Promise<OrderAllocationEntity>
+}
+
+interface PriceConfigurationRepository {
+    get(): Promise<PriceConfigurationEntity>
 }
 
 class OrderAllocationRepositoryImpl implements OrderAllocationRepository {
@@ -20,4 +24,19 @@ class OrderAllocationRepositoryImpl implements OrderAllocationRepository {
     }
 }
 
-export { OrderAllocationRepository, OrderAllocationRepositoryImpl };
+class PriceConfigurationRepositoryImpl implements PriceConfigurationRepository {
+    private readonly ormRepository;
+
+    constructor(repository: Repository<PriceConfigurationEntity>) {
+        this.ormRepository = repository;
+        this.get = this.get.bind(this);
+    }
+
+    async get(): Promise<PriceConfigurationEntity> {
+        return this.ormRepository.findOneByOrFail({
+            id: 1
+        });
+    }
+}
+
+export { OrderAllocationRepository, OrderAllocationRepositoryImpl, PriceConfigurationRepositoryImpl, PriceConfigurationRepository };

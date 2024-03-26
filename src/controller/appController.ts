@@ -1,6 +1,6 @@
 import CustomError from "../domain/models/error";
 import { Order } from "../domain/models/order";
-import { ORDER_TYPE, PAIRS, SIDES, TIME_IN_FORCE } from "../domain/models/types";
+import { mapStringToEnum, mapStringToPair, mapStringToTimeInForce, ORDER_TYPE, PAIRS, SIDES, TIME_IN_FORCE } from "../domain/models/types";
 import OrderRouterService from "../domain/ports/OrderRouterService";
 import { Request, Response } from "express";
 
@@ -51,7 +51,7 @@ export class AppController implements OrderRouterController {
             const pair = String(req.query.pair).toUpperCase();
             if (!(pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
 
-            const avgPrice = await this.appService.getAvgPrice(this.mapStringToPair(pair));
+            const avgPrice = await this.appService.getAvgPrice(mapStringToPair(pair));
             res.status(200).send(avgPrice);
         } catch (error) {
             const err = error as CustomError;
@@ -65,14 +65,18 @@ export class AppController implements OrderRouterController {
             const pair = String(req.query.pair).toUpperCase();
             const amount = Number(req.query.amount);
             const limitOrders = Number(req.query.limitOrders ?? 300);
+            const customFee: number | undefined = Number(req.query.fee);
+            const customSpread: number | undefined = Number(req.query.spread);
             if (!(pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
             if (!(side in SIDES)) throw new CustomError(422, "Side not supported.");
 
             const bestPairPrice = await this.appService.getBestPairPrice(
-                this.mapStringToPair(pair), 
+                mapStringToPair(pair), 
                 amount, 
-                this.mapStringToEnum(side),
-                limitOrders
+                mapStringToEnum(side),
+                limitOrders,
+                customFee,
+                customSpread
             );
 
             res.status(200).send(bestPairPrice);
@@ -85,9 +89,9 @@ export class AppController implements OrderRouterController {
     public async postOrder(req: Request, res: Response) {
         try {
             const newOrderBody = new NewOrderBody(
-                this.mapStringToPair(String(req.body.pair).toUpperCase()),
-                this.mapStringToEnum(String(req.body.side).toUpperCase()),
-                this.mapStringToTimeInForce(String(req.body.timeInForce).toUpperCase()),
+                mapStringToPair(String(req.body.pair).toUpperCase()),
+                mapStringToEnum(String(req.body.side).toUpperCase()),
+                mapStringToTimeInForce(String(req.body.timeInForce).toUpperCase()),
                 req.body.price,
                 req.body.quantity
             );
@@ -99,17 +103,5 @@ export class AppController implements OrderRouterController {
             const err = error as CustomError;
             res.status(err.status || 500).send(err.message);
         }
-    }
-
-    private mapStringToEnum(side: string): SIDES {
-        return SIDES[side as keyof typeof SIDES];
-    }
-
-    private mapStringToPair(pair: string): PAIRS {
-        return PAIRS[pair as keyof typeof PAIRS];
-    }
-
-    private mapStringToTimeInForce(tif: string): TIME_IN_FORCE {
-        return TIME_IN_FORCE[tif as keyof typeof TIME_IN_FORCE];
     }
 }

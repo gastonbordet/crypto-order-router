@@ -18,9 +18,12 @@ const mockBinanceClient = ({
 const mockOrderAllocationRepository = ({
   save: jest.fn(),
 });
+const mockPriceConfigRepository = ({
+  get: jest.fn(),
+});
 const mapper = new BinanceConnectorMapper();
 const binanceConnector = new BinanceConnector(mockBinanceClient, mapper);
-const persistenceAdapter = new PersistenceAdapter(mockOrderAllocationRepository);
+const persistenceAdapter = new PersistenceAdapter(mockOrderAllocationRepository, mockPriceConfigRepository);
 const appService = new AppService(binanceConnector, persistenceAdapter);
 const appController = new AppController(appService);
 const router = buildRouter(appController);
@@ -88,7 +91,11 @@ describe("Crypto order router app tests", () => {
   it("Should calculate best price based on exchange order book", async () => {
     // Setup
     const expectedAmount = 2.5;
-    const expectedPrice = 2.5;
+    const expectedPrice = 2.525;
+    mockPriceConfigRepository.get.mockImplementation(() => ({
+      spread: 0,
+      exchangeFee: 1.0
+    }));
     mockBinanceClient.orderBook.mockImplementation(() => (
       {
         "lastUpdateId": 44667779307,

@@ -40,4 +40,25 @@ enum ORDER_STATUS {
     EXPIRED_IN_MATCH = "EXPIRED_IN_MATCH"
 }
 
-export { PAIRS, SIDES, TIME_IN_FORCE, ORDER_TYPE, ORDER_STATUS };
+const mapStringToEnum = (side: string): SIDES => {
+    return SIDES[side as keyof typeof SIDES];
+};
+
+const mapStringToPair = (pair: string): PAIRS => {
+    return PAIRS[pair as keyof typeof PAIRS];
+};
+
+const mapStringToTimeInForce = (tif: string): TIME_IN_FORCE => {
+    return TIME_IN_FORCE[tif as keyof typeof TIME_IN_FORCE];
+};
+
+export { 
+    PAIRS, 
+    SIDES, 
+    TIME_IN_FORCE, 
+    ORDER_TYPE, 
+    ORDER_STATUS,
+    mapStringToEnum,
+    mapStringToPair,
+    mapStringToTimeInForce
+};
