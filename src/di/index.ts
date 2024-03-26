@@ -1,33 +1,31 @@
-import { AppController } from "../controller/appController";
+import { AppController, OrderRouterController } from "../controller/appController";
 import AppService from "../service/appService";
 import BinanceClient from "../infrastructure/restclient/binanceConnector";
 import { BinanceConnectorMapper } from "../infrastructure/restclient/mapper";
 import { Spot } from "@binance/connector-typescript";
 import dotenv from "dotenv";
 import { PersistenceAdapter } from "../infrastructure/persistence/adapter";
-import { initDataSource } from "../infrastructure/persistence/dataSource";
-import { OrderAllocationEntity } from "../infrastructure/persistence/entity";
-import { OrderAllocationRepositoryImpl } from "../infrastructure/persistence/repository";
+import AppDataSource from "../infrastructure/persistence/typeOrm.config";
+import { OrderAllocationEntity, PriceConfigurationEntity } from "../infrastructure/persistence/entity";
+import { OrderAllocationRepositoryImpl, PriceConfigurationRepositoryImpl } from "../infrastructure/persistence/repository";
 import { BinanceRestClientImpl } from "../infrastructure/restclient/binanceClient";
+import OrderRouterService from "../domain/ports/OrderRouterService";
+import { OrderPersistence } from "../domain/ports/orderPersistence";
 
 dotenv.config();
 
-const dataSource = initDataSource(
-    String(process.env.DB_HOST),
-    Number(process.env.DB_PORT),
-    String(process.env.POSTGRES_USER),
-    String(process.env.POSTGRES_PASSWORD),
-    String(process.env.POSTGRES_DB)
-);
-const orderRepository = new OrderAllocationRepositoryImpl(dataSource.getRepository(OrderAllocationEntity));
-const persistenceAdapter = new PersistenceAdapter(orderRepository);
+AppDataSource.initialize();
+
+const orderRepository = new OrderAllocationRepositoryImpl(AppDataSource.getRepository(OrderAllocationEntity));
+const priceConfigurationRepository = new PriceConfigurationRepositoryImpl(AppDataSource.getRepository(PriceConfigurationEntity));
 const binanceClient = new BinanceRestClientImpl(new Spot(
     process.env.BINANCE_API_KEY || "", 
     process.env.BINANCE_SECRET_KEY || ""
 ));
 const binanceConnectorMapper = new BinanceConnectorMapper();
 const binanceConnector = new BinanceClient(binanceClient, binanceConnectorMapper);
-const appService = new AppService(binanceConnector, persistenceAdapter);
-const appController = new AppController(appService);
+const persistenceAdapter: OrderPersistence = new PersistenceAdapter(orderRepository, priceConfigurationRepository);
+const appService: OrderRouterService = new AppService(binanceConnector, persistenceAdapter);
+const appController: OrderRouterController = new AppController(appService);
 
 export { appController, appService, persistenceAdapter };

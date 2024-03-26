@@ -52,4 +52,9 @@ class OrderBook {
     }
 }
 
-export { Order, OrderAllocation, OrderBook, Entry };
+interface PriceConfiguration {
+    exchangeFee: number
+    spread: number
+}
+
+export { Order, OrderAllocation, OrderBook, Entry, PriceConfiguration };

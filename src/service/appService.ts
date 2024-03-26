@@ -25,11 +25,20 @@ export default class AppService implements OrderRouterService {
         return orderAllocation;
     }
 
-    async getBestPairPrice(pair: PAIRS, amount: number, side: SIDES, limitOrders: number): Promise<BestPairPrice> {
+    async getBestPairPrice(
+        pair: PAIRS, 
+        amount: number, 
+        side: SIDES, 
+        limitOrders: number,
+        customFee?: number,
+        customSpread?: number
+    ): Promise<BestPairPrice> {
         if (limitOrders > 5000) { 
             throw new CustomError(400, "Max amount exceeded.");
         }
         const orderBook = await this.exchangeConnector.getOrderBook(pair, limitOrders);
+        const priceConfiguration = await this.orderPersistence.getPriceConfiguration();
+
         const orderBookAmount = orderBook.getEntries(side).reduce((sum, bid) => sum + bid.quantity, 0);
                 
         if (amount > orderBookAmount) {
@@ -49,7 +58,15 @@ export default class AppService implements OrderRouterService {
             i++;
         }
         
-        return { pair: pair, amount: amount, price: price };
+        const bestPrice = new BestPairPrice(pair, amount, price);
+
+        bestPrice.calculateFeeAndSpread(
+            side,
+            customFee || priceConfiguration.exchangeFee,
+            customSpread || priceConfiguration.spread
+        );
+
+        return bestPrice;
     }
 
     async getAvgPrice(pair: PAIRS): Promise<PairAvgPrice> {
