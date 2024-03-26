@@ -12,7 +12,8 @@ import { OrderAllocation } from "../domain/models/order";
 
 const mockBinanceClient = ({
   currentAveragePrice: jest.fn(),
-  newOrder: jest.fn()
+  newOrder: jest.fn(),
+  orderBook: jest.fn(),
 });
 const mockOrderAllocationRepository = ({
   save: jest.fn(),
@@ -82,5 +83,53 @@ describe("Crypto order router app tests", () => {
     expect(mockBinanceClient.newOrder).toHaveBeenCalledTimes(1);
     expect(mockOrderAllocationRepository.save).toHaveBeenCalledTimes(1);
     expect(res.body.orderId).toEqual(String(mockBinanceNewOrder.orderId));
+  });
+
+  it("Should calculate best price based on exchange order book", async () => {
+    // Setup
+    const expectedAmount = 2.5;
+    const expectedPrice = 2.5;
+    mockBinanceClient.orderBook.mockImplementation(() => (
+      {
+        "lastUpdateId": 44667779307,
+        "bids": [
+            [
+                "1.0000000", // price
+                "1.0" // quantity
+            ],
+            [
+                "1.0000000",
+                "2.0"
+            ],
+            [
+                "62161.67000000",
+                "0.06575000"
+            ]
+          ],
+        "asks": [
+          [
+              "62164.01000000",
+              "1.92864000"
+          ],
+          [
+              "62164.27000000",
+              "0.20000000"
+          ],
+          [
+              "62164.40000000",
+              "0.23935000"
+          ],
+        ] 
+      }
+    ));
+
+    // Act
+    const res = await request(app).get("/bestprice?side=SELL&pair=BTCUSDT&amount=2.5");
+
+    // Assert
+    expect(res.statusCode).toEqual(200);
+    expect(mockBinanceClient.orderBook).toHaveBeenCalledTimes(1);
+    expect(res.body.amount).toEqual(expectedAmount);
+    expect(res.body.price).toEqual(expectedPrice);
   });
 });

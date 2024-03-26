@@ -1,4 +1,4 @@
-import { Order, OrderAllocation } from "../../domain/models/order";
+import { Order, OrderAllocation, OrderBook } from "../../domain/models/order";
 import { PairAvgPrice } from "../../domain/models/pairAvgPrice";
 import ExchangeConnector from "../../domain/ports/exchangeConnector";
 import CustomError from "../../domain/models/error";
@@ -14,6 +14,7 @@ export default class BinanceConnector implements ExchangeConnector {
         this.mapper = mapper;
         this.getPairAvgPrice = this.getPairAvgPrice.bind(this);
         this.postOrder = this.postOrder.bind(this);
+        this.getOrderBook = this.getOrderBook.bind(this);
     }
 
     async postOrder(order: Order): Promise<OrderAllocation> {
@@ -44,5 +45,11 @@ export default class BinanceConnector implements ExchangeConnector {
             binanceAvgPrice.price,
             binanceAvgPrice.closeTime
         );
+    }
+
+    async getOrderBook(pair: string, limit: number): Promise<OrderBook> {
+        const orderBookResponse = await this.binanceClient.orderBook(pair, {limit});
+
+        return this.mapper.convertFromExchangeOrderBook(orderBookResponse);
     }
 }

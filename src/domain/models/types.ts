@@ -1,3 +1,4 @@
+// TODO persist as entities in DB for configuration. 
 enum PAIRS {
     USDTETH = "USDTETH",
     USDTBTC = "USDTBTC",

@@ -5,7 +5,7 @@ import { Spot } from "@binance/connector-typescript";
 interface BinanceRestClient {
     currentAveragePrice(symbol: string): Promise<any>;
     newOrder(symbol: string, side: Side, type: OrderType, options?: any): Promise<any>;
-
+    orderBook(symbol: string, options?: any): Promise<any>;
 }
 
 class BinanceRestClientImpl implements BinanceRestClient {
@@ -23,6 +23,10 @@ class BinanceRestClientImpl implements BinanceRestClient {
 
     newOrder(symbol: string, side: Side, type: OrderType, options?: any): Promise<any> {
         return this.client.newOrder(symbol, side, type, options);
+    }
+
+    orderBook(symbol: string, options?: any): Promise<any> {
+        return this.client.orderBook(symbol, options);
     }
 }
 

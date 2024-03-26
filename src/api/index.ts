@@ -10,6 +10,7 @@ export const buildRouter = (appController: OrderRouterController): express.Route
     }); 
     
     router.get("/avgprice", appController.getAvgPrice);
+    router.get("/bestprice", appController.getBestPairPrice);
     router.post("/orders", appController.postOrder);
 
     return router;
