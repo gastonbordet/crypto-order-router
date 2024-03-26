@@ -29,10 +29,27 @@ interface Entry {
     quantity: number
 }
 
-interface OrderBook {
+class OrderBook {
     lastUpdateId: number;
     bids: Entry[];
     asks: Entry[];
+
+    constructor(lastUpdateId: number, bids: Entry[], asks: Entry[]) {
+        this.lastUpdateId = lastUpdateId;
+        this.bids = bids;
+        this.asks = asks;
+    }
+
+    public getEntries(side: SIDES) {
+        switch(side) {
+            case SIDES.BUY:
+                return this.asks;
+            case SIDES.SELL:
+                return this.bids;
+            default:
+                return [];
+        }
+    }
 }
 
 export { Order, OrderAllocation, OrderBook, Entry };

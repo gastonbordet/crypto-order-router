@@ -6,24 +6,7 @@ import OrderRouterService from "../domain/ports/OrderRouterService";
 import ExchangeConnector from "../domain/ports/exchangeConnector";
 import { OrderPersistence } from "../domain/ports/orderPersistence";
 import CustomError from "../domain/models/error";
-
-const MOCK_DATA = {
-    "asks": [
-        [
-            61956.0,
-            1.90
-        ],
-        [
-            61955.0,
-            0.1
-        ],
-        [
-            61954.0,
-            0.1
-        ],
-    ]
-};
-
+import { PAIRS, SIDES } from "../domain/models/types";
 
 export default class AppService implements OrderRouterService {
     private readonly exchangeConnector: ExchangeConnector;
@@ -42,22 +25,18 @@ export default class AppService implements OrderRouterService {
         return orderAllocation;
     }
 
-    async getBestPairPrice(pair: string, amount: number): Promise<BestPairPrice> {
-        let limit = 500;
-        let orderBook = await this.exchangeConnector.getOrderBook(pair, limit);
-        let orderBookAmount = orderBook.asks.reduce((sum, bid) => sum + bid.quantity, 0);
-        
-        while(amount > orderBookAmount) {
-            limit += 100;
-            // Validate binance max limit
-            if (limit > 5000) { 
-                throw new CustomError(400, "Max amount exceeded.");
-            }
-            orderBook = await this.exchangeConnector.getOrderBook(pair, limit);
-            orderBookAmount = orderBook.asks.reduce((sum, bid) => sum + bid.quantity, 0);
-        }  
-        
-        const orders = orderBook.asks.sort((a, b) => a.price - b.price);
+    async getBestPairPrice(pair: PAIRS, amount: number, side: SIDES, limitOrders: number): Promise<BestPairPrice> {
+        if (limitOrders > 5000) { 
+            throw new CustomError(400, "Max amount exceeded.");
+        }
+        const orderBook = await this.exchangeConnector.getOrderBook(pair, limitOrders);
+        const orderBookAmount = orderBook.getEntries(side).reduce((sum, bid) => sum + bid.quantity, 0);
+                
+        if (amount > orderBookAmount) {
+            throw new CustomError(400, `Please increase your current ${limitOrders} order amount limit.`);
+        }
+
+        const orders = orderBook.getEntries(side).sort((a, b) => a.price - b.price);
         let price = 0;
         let amountbuyed = 0;
         let i = 0;
@@ -73,7 +52,7 @@ export default class AppService implements OrderRouterService {
         return { pair: pair, amount: amount, price: price };
     }
 
-    async getAvgPrice(pair: string): Promise<PairAvgPrice> {
+    async getAvgPrice(pair: PAIRS): Promise<PairAvgPrice> {
         const avgPrice = await this.exchangeConnector.getPairAvgPrice(pair);
         return avgPrice;
     }

@@ -11,14 +11,14 @@ export interface OrderRouterController {
 }
 
 class NewOrderBody implements Order {
-    pair: string;
+    pair: PAIRS;
     side: SIDES;
     timeInForce: TIME_IN_FORCE;
     type: ORDER_TYPE;
     price: number;
     quantity: number;
 
-    constructor(pair: string, side: SIDES, timeInForce: TIME_IN_FORCE, price: number, quantity: number) {
+    constructor(pair: PAIRS, side: SIDES, timeInForce: TIME_IN_FORCE, price: number, quantity: number) {
         this.type = ORDER_TYPE.LIMIT;
         this.pair = pair;
         this.side = side;
@@ -48,10 +48,10 @@ export class AppController implements OrderRouterController {
 
     public async getAvgPrice(req: Request, res: Response) {
         try {
-            const pair = String(req.query.pair);
+            const pair = String(req.query.pair).toUpperCase();
             if (!(pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
 
-            const avgPrice = await this.appService.getAvgPrice(pair);
+            const avgPrice = await this.appService.getAvgPrice(this.mapStringToPair(pair));
             res.status(200).send(avgPrice);
         } catch (error) {
             const err = error as CustomError;
@@ -61,13 +61,21 @@ export class AppController implements OrderRouterController {
 
     public async getBestPairPrice(req: Request, res: Response) {
         try {
-            const pair = String(req.query.pair);
+            const side = String(req.query.side).toUpperCase();
+            const pair = String(req.query.pair).toUpperCase();
             const amount = Number(req.query.amount);
+            const limitOrders = Number(req.query.limitOrders ?? 300);
             if (!(pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
+            if (!(side in SIDES)) throw new CustomError(422, "Side not supported.");
 
-            const bestPairPrice = await this.appService.getBestPairPrice(pair, amount);
+            const bestPairPrice = await this.appService.getBestPairPrice(
+                this.mapStringToPair(pair), 
+                amount, 
+                this.mapStringToEnum(side),
+                limitOrders
+            );
 
-            res.status(200).send(JSON.stringify(bestPairPrice));
+            res.status(200).send(bestPairPrice);
         } catch (error) {
             const err = error as CustomError;
             res.status(err.status || 500).send(err.message);
@@ -77,9 +85,9 @@ export class AppController implements OrderRouterController {
     public async postOrder(req: Request, res: Response) {
         try {
             const newOrderBody = new NewOrderBody(
-                req.body.pair,
-                this.mapStringToEnum(req.body.side),
-                this.mapStringToTimeInForce(req.body.timeInForce),
+                this.mapStringToPair(String(req.body.pair).toUpperCase()),
+                this.mapStringToEnum(String(req.body.side).toUpperCase()),
+                this.mapStringToTimeInForce(String(req.body.timeInForce).toUpperCase()),
                 req.body.price,
                 req.body.quantity
             );
@@ -94,24 +102,14 @@ export class AppController implements OrderRouterController {
     }
 
     private mapStringToEnum(side: string): SIDES {
-        if (side === "BUY") {
-            return SIDES.BUY;
-        } else if (side === "SELL") {
-            return SIDES.SELL;
-        } else {
-            throw new Error("Invalid side");
-        }
+        return SIDES[side as keyof typeof SIDES];
+    }
+
+    private mapStringToPair(pair: string): PAIRS {
+        return PAIRS[pair as keyof typeof PAIRS];
     }
 
     private mapStringToTimeInForce(tif: string): TIME_IN_FORCE {
-        if (tif === "GTC") {
-            return TIME_IN_FORCE.GTC;
-        } else if (tif === "IOC") {
-            return TIME_IN_FORCE.IOC;
-        } else if (tif === "FOK") {
-            return TIME_IN_FORCE.FOK;
-        } else {
-            throw new Error("Invalid side");
-        }
+        return TIME_IN_FORCE[tif as keyof typeof TIME_IN_FORCE];
     }
 }

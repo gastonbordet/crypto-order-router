@@ -29,11 +29,11 @@ class BinanceConnectorMapper implements ExchangeConnectorMapper {
     }
 
     convertFromExchangeOrderBook(orderBook: any): OrderBook {
-        return {
-            lastUpdateId: orderBook.lastUpdateId,
-            bids: orderBook.bids.map((entry: string[]) => ({price: parseFloat(entry[0]), quantity: parseFloat(entry[1])})),
-            asks: orderBook.asks.map((entry: string[]) => ({price: parseFloat(entry[0]), quantity: parseFloat(entry[1])})),
-        };
+        return new OrderBook(
+            orderBook.lastUpdateId,
+            orderBook.bids.map((entry: string[]) => ({price: parseFloat(entry[0]), quantity: parseFloat(entry[1])})),
+            orderBook.asks.map((entry: string[]) => ({price: parseFloat(entry[0]), quantity: parseFloat(entry[1])})),
+        );
     }
 
     convertToExchangeSide(side: SIDES): Side {
