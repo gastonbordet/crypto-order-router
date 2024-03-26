@@ -31,19 +31,4 @@ export class OrderAllocationEntity implements OrderAllocation {
     side: SIDES;
     @Column()
     workingTime: number;
-
-    constructor(orderAllocation: OrderAllocation) {
-        this.pair = orderAllocation.pair;
-        this.orderId = orderAllocation.orderId;
-        this.clientOrderId = orderAllocation.clientOrderId;
-        this.transactTime = orderAllocation.transactTime;
-        this.price = orderAllocation.price;
-        this.originalQuantity = orderAllocation.originalQuantity;
-        this.executedQuantity = orderAllocation.executedQuantity;
-        this.status = orderAllocation.status;
-        this.timeInForce = orderAllocation.timeInForce;
-        this.type = orderAllocation.type;
-        this.side = orderAllocation.side;
-        this.workingTime = orderAllocation.workingTime;
-    }
 }

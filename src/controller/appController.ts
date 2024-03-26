@@ -29,6 +29,7 @@ class NewOrderBody implements Order {
     }
 
     public validateSelf() {
+        // TODO generate validator and validations 
         if (!(this.pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
         if (!(this.side in SIDES)) throw new CustomError(422, "Side not supported.");
         if (!(this.timeInForce in TIME_IN_FORCE)) throw new CustomError(422, "Time in force not supported.");
@@ -46,17 +47,31 @@ export class AppController implements OrderRouterController {
     }
 
     public async getAvgPrice(req: Request, res: Response) {
-        const pair = String(req.query.pair);
-        const avgPrice = await this.appService.getAvgPrice(pair);
-        res.status(200).send(avgPrice);
+        try {
+            const pair = String(req.query.pair);
+            if (!(pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
+
+            const avgPrice = await this.appService.getAvgPrice(pair);
+            res.status(200).send(avgPrice);
+        } catch (error) {
+            const err = error as CustomError;
+            res.status(err.status || 500).send(err.message);
+        }
     }
 
-    public getBestPairPrice(req: Request, res: Response) {
-        const pair = String(req.query.pair);
-        const amount = Number(req.query.amount);
-        const bestPairPrice = this.appService.getBestPairPrice(pair, amount);
+    public async getBestPairPrice(req: Request, res: Response) {
+        try {
+            const pair = String(req.query.pair);
+            const amount = Number(req.query.amount);
+            if (!(pair in PAIRS)) throw new CustomError(422, "Pair not supported.");
 
-        res.status(200).send(JSON.stringify(bestPairPrice));
+            const bestPairPrice = await this.appService.getBestPairPrice(pair, amount);
+
+            res.status(200).send(JSON.stringify(bestPairPrice));
+        } catch (error) {
+            const err = error as CustomError;
+            res.status(err.status || 500).send(err.message);
+        }
     }
 
     public async postOrder(req: Request, res: Response) {

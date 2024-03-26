@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OrderStatus, OrderType, Side, TimeInForce } from "@binance/connector-typescript";
 import { ORDER_STATUS, ORDER_TYPE, SIDES, TIME_IN_FORCE } from "../../domain/models/types";
-import { OrderAllocation } from "../../domain/models/order";
+import { OrderAllocation, OrderBook } from "../../domain/models/order";
 
 interface ExchangeConnectorMapper {
     convertToExchangeSide(side: SIDES): Side
@@ -12,7 +12,7 @@ interface ExchangeConnectorMapper {
     convertFromExchangeOrderType(type: OrderType): ORDER_TYPE
     convertFromExchangeSide(side: Side): SIDES
     convertToOrderAllocationFromExchangeNewOrderResponse(newOrderResponse: any): OrderAllocation
-   
+    convertFromExchangeOrderBook(orderBook: any): OrderBook
 }
 
 class BinanceConnectorMapper implements ExchangeConnectorMapper {
@@ -25,6 +25,15 @@ class BinanceConnectorMapper implements ExchangeConnectorMapper {
         this.convertFromExchangeOrderType = this.convertFromExchangeOrderType.bind(this);
         this.convertFromExchangeSide = this.convertFromExchangeSide.bind(this);
         this.convertToOrderAllocationFromExchangeNewOrderResponse = this.convertToOrderAllocationFromExchangeNewOrderResponse.bind(this);
+        this.convertFromExchangeOrderBook = this.convertFromExchangeOrderBook.bind(this);
+    }
+
+    convertFromExchangeOrderBook(orderBook: any): OrderBook {
+        return {
+            lastUpdateId: orderBook.lastUpdateId,
+            bids: orderBook.bids.map((entry: string[]) => ({price: parseFloat(entry[0]), quantity: parseFloat(entry[1])})),
+            asks: orderBook.asks.map((entry: string[]) => ({price: parseFloat(entry[0]), quantity: parseFloat(entry[1])})),
+        };
     }
 
     convertToExchangeSide(side: SIDES): Side {

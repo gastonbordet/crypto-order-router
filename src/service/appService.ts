@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Order, OrderAllocation } from "../domain/models/order";
+import { Order, OrderAllocation, OrderBook } from "../domain/models/order";
 import { BestPairPrice } from "../domain/models/bestPairPrice";
 import { PairAvgPrice } from "../domain/models/pairAvgPrice";
 import OrderRouterService from "../domain/ports/OrderRouterService";
 import ExchangeConnector from "../domain/ports/exchangeConnector";
 import { OrderPersistence } from "../domain/ports/orderPersistence";
+import CustomError from "../domain/models/error";
 
 const MOCK_DATA = {
     "asks": [
@@ -41,18 +42,31 @@ export default class AppService implements OrderRouterService {
         return orderAllocation;
     }
 
-    getBestPairPrice(pair: string, amount: number): BestPairPrice {
-        const orders = MOCK_DATA["asks"].sort((a, b) => a[0] - b[0]);
-        const orderBookAmount = orders.reduce((sum, bid) => sum + bid[1], 0);
-        // if (amount > orderBookAmount) get more orders
-
+    async getBestPairPrice(pair: string, amount: number): Promise<BestPairPrice> {
+        let limit = 500;
+        let orderBook = await this.exchangeConnector.getOrderBook(pair, limit);
+        let orderBookAmount = orderBook.asks.reduce((sum, bid) => sum + bid.quantity, 0);
+        
+        while(amount > orderBookAmount) {
+            limit += 100;
+            // Validate binance max limit
+            if (limit > 5000) { 
+                throw new CustomError(400, "Max amount exceeded.");
+            }
+            orderBook = await this.exchangeConnector.getOrderBook(pair, limit);
+            orderBookAmount = orderBook.asks.reduce((sum, bid) => sum + bid.quantity, 0);
+        }  
+        
+        const orders = orderBook.asks.sort((a, b) => a.price - b.price);
         let price = 0;
         let amountbuyed = 0;
         let i = 0;
+
         while (amountbuyed < amount) {
-            const amountwanted = orders[i][1] > amount - amountbuyed ? orders[i][1] - amountbuyed : orders[i][1];
+            const entry = orders[i];
+            const amountwanted = entry.quantity > amount - amountbuyed ? amount - amountbuyed : entry.quantity;
             amountbuyed += amountwanted;
-            price += amountwanted * orders[i][0];
+            price += amountwanted * entry.price;
             i++;
         }
         

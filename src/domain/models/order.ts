@@ -24,4 +24,15 @@ interface OrderAllocation {
     workingTime: number;
 }
 
-export { Order, OrderAllocation };
+interface Entry {
+    price: number
+    quantity: number
+}
+
+interface OrderBook {
+    lastUpdateId: number;
+    bids: Entry[];
+    asks: Entry[];
+}
+
+export { Order, OrderAllocation, OrderBook, Entry };
